@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 
 function App() {
   const [isSending, setIsSending] = useState<boolean>(false);
@@ -7,20 +8,20 @@ function App() {
   const [inputName, setInputName] = useState<string>("");
   const [indentity, setIndentity] = useState<string>("");
 
+  const generateRandomNumber = () => {
+    const prefix = "85";
+    const randomDigits = Math.floor(100000 + Math.random() * 900000); // Genera un número aleatorio entre 100000 y 999999
+    return prefix + randomDigits;
+  };
+
   const onSend = async () => {
     setIsSending(true);
-    // formating
+
+    // Formateo
     const nameSplit = inputName.split(" ");
     const indentitySanity = indentity.replace("-", "");
 
-    const email = `${nameSplit[0].toLowerCase()}.${nameSplit[1].toLowerCase()}@gmail.com}`;
-
-    const generateRandomNumber = () => {
-      const prefix = '85';
-      const randomDigits = Math.floor(100000 + Math.random() * 900000); // Genera un número aleatorio entre 100000 y 999999
-      return  prefix + randomDigits;
-    };
-
+    const email = `${nameSplit[0].toLowerCase()}.${nameSplit[1].toLowerCase()}@gmail.com`;
 
     const formData = {
       campaignName: "Spark Watermelon",
@@ -30,11 +31,23 @@ function App() {
           { question: "Apellido", response: nameSplit[1], required: true },
           { question: "Correo", response: email, required: true },
           { question: "Cédula", response: indentitySanity, required: true },
-          { question: "Celular", response: generateRandomNumber(), required: true },
+          {
+            question: "Celular",
+            response: generateRandomNumber(),
+            required: true,
+          },
           { question: "Departamento", response: "Chinandega", required: true },
-          { question: "Si acepto los términos y condiciones de la promoción", response: "Si", required: true },
-          { question: "Si acepto recibir correos de promoción de parte de CCN", response: "Si", required: false }
-        ]
+          {
+            question: "Si acepto los términos y condiciones de la promoción",
+            response: "Si",
+            required: true,
+          },
+          {
+            question: "Si acepto recibir correos de promoción de parte de CCN",
+            response: "Si",
+            required: false,
+          },
+        ],
       ]),
       email: email,
       receiveMail: true,
@@ -42,39 +55,42 @@ function App() {
     };
 
     try {
-      await fetch('https://api.premioccn.com.ni/v1/forms', {
-        method: 'POST',
+      // Enviar datos del formulario
+      await axios.post("https://api.premioccn.com.ni/v1/forms", formData, {
         headers: {
-          'Content-Type': 'application/json; charset=utf-8'
+          "Content-Type": "application/json",
+          Accept: "application/json, text/plain, */*",
+          Origin: "https://www.premioccn.com.ni",
         },
-        body: JSON.stringify(formData)
       });
 
-      const response = await fetch('https://api.premioccn.com.ni/v1/users/reward-codes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+      // Obtener código de recompensa
+      const response = await axios.post(
+        "https://api.premioccn.com.ni/v1/users/reward-codes",
+        {
           campaignName: "Spark Watermelon",
           deviceType: 3,
           cedula: indentitySanity,
           email: email,
-        })
-      });
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json, text/plain, */*",
+            Origin: "https://www.premioccn.com.ni",
+          },
+        }
+      );
 
-      if (response.ok) {
-      
-        const result = await response.json();
-        if ('code' in result) {
+      if (response.status === 200) {
+        const result = response.data;
+        if ("code" in result) {
           setCode(result.code);
         }
-    
       }
-  
-
     } catch (error) {
-      setCode("verifica bien los campos o estos datos ya se han usado")
+      setCode("Verifica bien los campos o estos datos ya se han usado");
+      console.error("Error:", error);
     } finally {
       setIsSending(false);
     }
