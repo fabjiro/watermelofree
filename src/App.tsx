@@ -8,84 +8,28 @@ function App() {
   const [inputName, setInputName] = useState<string>("");
   const [indentity, setIndentity] = useState<string>("");
 
-  const generateRandomNumber = () => {
-    const prefix = "85";
-    const randomDigits = Math.floor(100000 + Math.random() * 900000); // Genera un número aleatorio entre 100000 y 999999
-    return prefix + randomDigits;
-  };
-
   const onSend = async () => {
     setIsSending(true);
 
-    // Formateo
-    const nameSplit = inputName.split(" ");
-    const indentitySanity = indentity.replace("-", "");
-
-    const email = `${nameSplit[0].toLowerCase()}.${nameSplit[1].toLowerCase()}@gmail.com`;
-
-    const formData = {
-      campaignName: "Spark Watermelon",
-      form: JSON.stringify([
-        [
-          { question: "Nombre", response: nameSplit[0], required: true },
-          { question: "Apellido", response: nameSplit[1], required: true },
-          { question: "Correo", response: email, required: true },
-          { question: "Cédula", response: indentitySanity, required: true },
-          {
-            question: "Celular",
-            response: generateRandomNumber(),
-            required: true,
-          },
-          { question: "Departamento", response: "Chinandega", required: true },
-          {
-            question: "Si acepto los términos y condiciones de la promoción",
-            response: "Si",
-            required: true,
-          },
-          {
-            question: "Si acepto recibir correos de promoción de parte de CCN",
-            response: "Si",
-            required: false,
-          },
-        ],
-      ]),
-      email: email,
-      receiveMail: true,
-      cedula: indentitySanity,
-    };
-
     try {
-      // Enviar datos del formulario
-      await axios.post("https://api.premioccn.com.ni/v1/forms", formData, {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json, text/plain, */*",
-          Origin: "https://www.premioccn.com.ni",
-        },
-      });
-
-      // Obtener código de recompensa
       const response = await axios.post(
-        "https://api.premioccn.com.ni/v1/users/reward-codes",
+        "https://uploader-service.onrender.com/waterfree",
         {
-          campaignName: "Spark Watermelon",
-          deviceType: 3,
-          cedula: indentitySanity,
-          email: email,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json, text/plain, */*",
-            Origin: "https://www.premioccn.com.ni",
-          },
+          username: inputName,
+          identity: indentity,
         }
       );
 
-      if (response.status === 200) {
-        const result = response.data;
-        if ("code" in result) {
-          setCode(result.code);
+      const result = response.data;
+      console.log(result);
+      if ("code" in result) {
+        const code = result.code ?? "xd";
+        console.log(`Code: ${code}`);
+
+        if (code.length > 0) {
+          setCode(code);
+        } else {
+          setCode("Verifica bien los campos o estos datos ya se han usado");
         }
       }
     } catch (error) {
