@@ -4,6 +4,7 @@ import axios from "axios";
 function App() {
   const [isSending, setIsSending] = useState<boolean>(false);
   const [code, setCode] = useState<string>("");
+  const [errors, setErros] = useState<string[]>([]);
 
   const [inputName, setInputName] = useState<string>("");
   const [indentity, setIndentity] = useState<string>("");
@@ -21,16 +22,22 @@ function App() {
       );
 
       const result = response.data;
-      console.log(result);
+
+      if('errors' in result) {
+        setErros([
+          result['message'],
+          ...result.errors,
+        ]);
+      }
+      
       if ("code" in result) {
         const code = result.code ?? "xd";
-        console.log(`Code: ${code}`);
 
         if (code.length > 0) {
           setCode(code);
-        } else {
-          setCode("Verifica bien los campos o estos datos ya se han usado");
-        }
+          // setInputName('');
+          // setIndentity('');
+        } 
       }
     } catch (error) {
       setCode("Verifica bien los campos o estos datos ya se han usado");
@@ -57,6 +64,7 @@ function App() {
               Nombre y apellido:
             </label>
             <input
+              disabled={isSending}
               id="input-text"
               type="text"
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -69,12 +77,14 @@ function App() {
             <input
               id="input-text"
               type="text"
+              disabled={isSending}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="000-000000-00000"
               onChange={(e) => setIndentity(e.target.value)}
             />
           </div>
           <button
+            disabled={isSending}
             onClick={onSend}
             type="button"
             className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded-md shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex justify-center items-center"
@@ -122,6 +132,16 @@ function App() {
           </button>
         </div>
       </div>
+
+      {errors.length > 0 && (
+        <div className="flex items-center justify-center" >
+          <ul className="list-disc pl-5">
+            {errors.map((e) => (
+              <li>{e}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {code.length > 0 ? (
         <h1 className="text-3xl font-bold text-center">{code}</h1>
