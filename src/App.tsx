@@ -13,6 +13,8 @@ function App() {
     setIsSending(true);
 
     try {
+      setErros([]);
+      setCode('');
       const response = await axios.post(
         "https://uploader-service.onrender.com/waterfree",
         {
@@ -46,6 +48,7 @@ function App() {
         } 
       }
     } catch (error) {
+      setCode("hay problemas con esta cedula (puede estar mala)");
       console.error("Error:", error);
     } finally {
       setIsSending(false);
@@ -54,7 +57,12 @@ function App() {
 
   return (
     <div className="h-screen w-screen p-4">
-      <div className="w-full flex flex-col items-center justify-center">
+      <div className="w-full flex flex-col items-center justify-center cursor-pointer" onClick={() => {
+        setCode('');
+        setErros([]);
+        setInputName('');
+        setIndentity('');
+      }}>
         <div className="flex items-center space-x-4">
           <img src="img.png" width="50px" alt="embullados logo" />
           <h1 className="text-3xl font-bold text-center">Los embullados</h1>
