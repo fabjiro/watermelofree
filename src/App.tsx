@@ -23,11 +23,17 @@ function App() {
 
       const result = response.data;
 
-      if('errors' in result) {
-        setErros([
-          result['message'],
-          ...result.errors,
-        ]);
+      if('errors' in result || 'message' in result) {
+
+        if(result.errors) {
+          setErros([
+            result['message'],
+            ...result.errors,
+          ]);
+
+        } else {
+          setErros([result['message']]);
+        }
       }
       
       if ("code" in result) {
@@ -40,7 +46,6 @@ function App() {
         } 
       }
     } catch (error) {
-      setCode("Verifica bien los campos o estos datos ya se han usado");
       console.error("Error:", error);
     } finally {
       setIsSending(false);
